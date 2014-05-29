@@ -1,0 +1,44 @@
+<menu xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    tools:context="com.example.events.Main" >
+
+    <item android:id="@+id/action_create_event"
+        android:title="@string/create_event"
+        android:showAsAction="always" />
+
+    <item android:id="@+id/action_mapType"
+        android:title="@string/map_type"
+        android:showAsAction="always" >
+
+        <menu xmlns:android="http://schemas.android.com/apk/res/android"
+            xmlns:tools="http://schemas.android.com/tools"
+            tools:context="com.example.events.Main" >
+
+            <item
+                android:id="@+id/mapTypeNormal"
+                android:title="@string/normal" />
+
+            <item
+                android:id="@+id/mapTypeSatellite"
+                android:title="@string/satellite" />
+
+            <item
+                android:id="@+id/mapTypeTerrain"
+                android:title="@string/terrain" />
+
+            <item
+                android:id="@+id/mapTypeHybrid"
+                android:title="@string/hybrid" />
+
+        </menu>
+
+    </item>
+
+    <item android:id="@+id/action_settings"
+        android:title="@string/action_settings"
+        android:showAsAction="ifRoom"
+        android:icon="@drawable/icon" />
+
+</menu>
+
+
