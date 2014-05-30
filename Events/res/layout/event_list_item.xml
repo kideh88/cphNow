@@ -2,26 +2,31 @@
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:orientation="vertical">
+    android:orientation="vertical"
+    android:background="#f1f1f1"
+    android:paddingLeft="13dp"
+    android:paddingBottom="5dp"
+    android:paddingTop="5dp"
+    android:paddingRight="30dp">
 
     <TextView
         android:layout_width="fill_parent"
         android:layout_height="wrap_content"
-        android:textColor="#f36038"
+        android:textColor="#555555"
         android:text="Hello 1"
         android:id="@+id/child1"/>
 
     <TextView
         android:layout_width="fill_parent"
         android:layout_height="wrap_content"
-        android:textColor="#f36038"
+        android:textColor="#555555"
         android:text="Hello 2"
         android:id="@+id/child2"/>
 
     <TextView
         android:layout_width="fill_parent"
         android:layout_height="wrap_content"
-        android:textColor="#f36038"
+        android:textColor="#555555"
         android:text="Hello 3"
         android:id="@+id/child3"/>
 

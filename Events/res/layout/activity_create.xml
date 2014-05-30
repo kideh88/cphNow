@@ -1,0 +1,279 @@
+<ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
+xmlns:tools="http://schemas.android.com/tools"
+android:layout_width="match_parent"
+android:layout_height="wrap_content"
+android:orientation="vertical"
+tools:context="com.example.events.Create">
+
+<LinearLayout
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:orientation="vertical">
+    <!--tools:context="com.example.test2.app.CreateEvent"-->
+
+
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:id="@+id/timeDate"
+        android:paddingTop="5dp"
+        android:paddingLeft="5dp"
+        android:paddingRight="5dp"
+        >
+
+        <DatePicker
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:scaleX="0.90"
+            android:scaleY="0.90"
+            android:id="@+id/datePicker"
+            android:spinnersShown="true"
+            android:calendarViewShown="false"
+            android:layout_gravity="left"
+            android:layout_weight="1"
+
+            />
+
+
+        <TimePicker
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:scaleX="0.9"
+            android:scaleY="0.9"
+            android:id="@+id/timePicker"
+            android:layout_weight="1"
+            />
+
+    </LinearLayout>
+
+    <TableLayout
+        android:id="@+id/mainTable"
+        android:layout_width="fill_parent"
+        android:layout_height="wrap_content"
+        android:paddingLeft="20dp"
+        android:paddingRight="20dp"
+        android:shrinkColumns="0">
+
+        <TableRow>
+
+            <TextView
+                android:layout_width="fill_parent"
+                android:layout_height="wrap_content"
+                android:text="Event name:"
+                android:textStyle="bold"
+                android:textSize="18dp"
+                />
+
+
+        </TableRow>
+        <TableRow>
+
+            <EditText
+                android:layout_height="wrap_content"
+                android:id="@+id/eventName"
+                android:textSize="16dp"
+                android:gravity="left"
+                android:layout_weight="1"
+                />
+        </TableRow>
+
+        <TableRow android:paddingTop="2dp" >
+
+            <TextView
+                android:layout_width="fill_parent"
+                android:layout_height="wrap_content"
+                android:text="Description:"
+                android:textStyle="bold"
+                android:textSize="18dp"
+                />
+        </TableRow>
+        <TableRow>
+            <EditText
+                android:layout_weight="1"
+                android:layout_height="wrap_content"
+                android:id="@+id/eventDescription"
+                android:inputType="textMultiLine"
+                android:textSize="16dp"
+                android:gravity="left"
+                android:maxLength="255"
+                android:maxLines="3"
+                android:scrollbars="vertical"
+                />
+        </TableRow>
+
+
+        <TableRow android:paddingTop="5dp" >
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Music:"
+                android:textStyle="bold"
+                android:textSize="18dp"
+                android:layout_weight="1"
+                />
+
+            <Switch
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:id="@+id/switchMusic"
+                android:textOn="Yes"
+                android:textOff="No"
+
+                />
+
+        </TableRow>
+
+        <TableRow android:paddingTop="5dp" >
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Drinks:"
+                android:textStyle="bold"
+                android:textSize="18dp"
+                android:layout_weight="1"
+                />
+
+            <Switch
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:id="@+id/switchDrinks"
+                android:textOn="Yes"
+                android:textOff="No"
+
+                />
+
+        </TableRow>
+
+
+        <TableRow android:paddingTop="5dp">
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Food:"
+                android:textStyle="bold"
+                android:textSize="18dp"
+                android:layout_weight="1"
+                />
+
+            <Switch
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:id="@+id/switchFood"
+                android:textOn="Yes"
+                android:textOff="No"
+
+                />
+
+        </TableRow>
+
+        <TableRow android:paddingTop="5dp" >
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Entrance fee:"
+                android:textStyle="bold"
+                android:textSize="18dp"
+                android:layout_weight="4"
+                />
+
+            <EditText
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:id="@+id/eventFee"
+                android:digits="0123456789"
+                android:textSize="16dp"
+                android:maxLength="4"
+                android:gravity="right"
+                android:layout_weight="4"
+                android:text="0"
+                android:selectAllOnFocus="true"
+                />
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:textAlignment="center"
+                android:text="Kr."
+                android:textSize="16dp"
+
+                />
+
+        </TableRow>
+
+
+        <TableRow android:paddingTop="2dp">
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Type:"
+                android:textStyle="bold"
+                android:textSize="18dp"
+                android:layout_weight="1"
+                />
+
+            <Spinner
+                android:layout_width="100dp"
+                android:layout_height="wrap_content"
+                android:id="@+id/eventType"
+                android:layout_gravity="right"
+                />
+
+        </TableRow>
+
+        <TableRow android:paddingTop="2dp">
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="People:"
+                android:textStyle="bold"
+                android:textSize="18dp"
+                android:layout_weight="1"
+                />
+
+            <Spinner
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:id="@+id/numberPeople"
+                android:layout_gravity="right"
+                />
+
+        </TableRow>
+
+        <TableRow android:paddingTop="2dp">
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Duration:"
+                android:textStyle="bold"
+                android:textSize="18dp"
+                android:layout_weight="1"
+                />
+
+            <Spinner
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:id="@+id/eventDuration"
+                android:layout_gravity="right"
+                />
+
+        </TableRow>
+    </TableLayout>
+
+    <Button
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Create my Event"
+        android:onClick="doCreateEvent"
+
+        />
+
+
+</LinearLayout>
+</ScrollView>

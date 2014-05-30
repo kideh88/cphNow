@@ -5,12 +5,18 @@
     android:padding="10dp"
     android:orientation="horizontal"
     android:gravity="center_vertical|center_horizontal" >
+
+    <ImageView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:src="@drawable/app_icon"/>
     
     <LinearLayout 
         android:orientation="vertical"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_weight="3">
+        android:layout_weight="3"
+        android:paddingLeft="5dp">
         
         <TextView 
             android:layout_width="fill_parent"

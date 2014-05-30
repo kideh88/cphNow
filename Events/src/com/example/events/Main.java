@@ -21,19 +21,25 @@ import com.google.android.gms.maps.model.Marker;
 import com.google.android.gms.maps.model.MarkerOptions;
 
 import android.app.Dialog;
+import android.app.Fragment;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.location.Address;
 import android.location.Geocoder;
 import android.location.Location;
 import android.os.Bundle;
+import android.os.Handler;
+import android.os.SystemClock;
 import android.support.v4.app.FragmentActivity;
+import android.support.v4.widget.SwipeRefreshLayout;
+import android.util.DisplayMetrics;
+import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
+import android.view.ViewGroup;
 import android.view.inputmethod.InputMethodManager;
-import android.widget.AdapterView;
-import android.widget.Button;
+import android.widget.ArrayAdapter;
 import android.widget.ExpandableListView;
 import android.widget.ListView;
 import android.widget.TextView;
@@ -42,6 +48,7 @@ import android.widget.Toast;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.atomic.AtomicInteger;
 
 
 public class Main extends FragmentActivity implements GooglePlayServicesClient.ConnectionCallbacks, GooglePlayServicesClient.OnConnectionFailedListener, LocationListener {
@@ -50,10 +57,10 @@ public class Main extends FragmentActivity implements GooglePlayServicesClient.C
     private static final double VIBEVEJ_LAT = 55.697437, VIBEVEJ_LNG = 12.526206;
     private static final float DEFAULTZOOM = 5;
     private static final int GPS_ERRORDIALOG_REQUEST = 9001;
-    private int lastExpandedPosition = -1;
+//    private int lastExpandedPosition = -1;
 
     public ExpandableListView getAllEventsListView;
-    public GetAllEventListViewAdapter adapter;
+//    public GetAllEventListViewAdapter adapter;
 	public static String appToken;
     public static String username;
     public static final String PREFS_NAME = "CPHnowSettings";
@@ -62,19 +69,27 @@ public class Main extends FragmentActivity implements GooglePlayServicesClient.C
     LocationClient mLocationClient;
     private List<Marker> mapMarkers = new ArrayList<Marker>();
 
+    private boolean viewSettingsIsVisible = false;
+
+    private View mViewSettings;
 
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
-		super.onCreate(savedInstanceState);
-		SharedPreferences settings = getSharedPreferences(PREFS_NAME, 0);
-		appToken = settings.getString("strAppToken", "");
-		username = settings.getString("strUsername", "");
+
+        super.onCreate(savedInstanceState);
+
+        SharedPreferences settings = getSharedPreferences(PREFS_NAME, 0);
+        appToken = settings.getString("strAppToken", "");
+        username = settings.getString("strUsername", "");
         eventListResults = getEventList();
+        setContentView(R.layout.map);
+
+        mViewSettings = findViewById(R.id.settings);
+
 
         if (servicesOK()) {
-			setContentView(R.layout.map);
-			getAllEventsListView = (ExpandableListView) findViewById(R.id.listView1);
-			setListAdapter();
+//			getAllEventsListView = (ExpandableListView) findViewById(R.id.listView1);
+//			setListAdapter();
 
 			if (initMap()) {
 				Toast.makeText(this, "ready to map", Toast.LENGTH_SHORT).show();
@@ -87,21 +102,27 @@ public class Main extends FragmentActivity implements GooglePlayServicesClient.C
                             JSONObject eventData = eventListResults.getJSONObject(key);
                             mapMarkers.add(setMarker(eventData.getString("strEventName"),"", eventData.getDouble("dblLatitude"), eventData.getDouble("dblLongitude")));
                         }
-                        getAllEventsListView.setOnGroupExpandListener(new ExpandableListView.OnGroupExpandListener() {
-                            @Override
-                            public void onGroupExpand(int groupPosition) {
-                                if (lastExpandedPosition != -1 && groupPosition != lastExpandedPosition) {
-                                    getAllEventsListView.collapseGroup(lastExpandedPosition);
-                                    mapMarkers.get(lastExpandedPosition).setIcon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_ORANGE));
-                                }
-                                lastExpandedPosition = groupPosition;
-                                mapMarkers.get(groupPosition).setIcon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_RED));
-                                gotoLocation(mapMarkers.get(groupPosition).getPosition().latitude, mapMarkers.get(groupPosition).getPosition().longitude, 15);
-                            }
-                        });
+                        if (savedInstanceState == null) {
+                            getFragmentManager().beginTransaction()
+                                    .add(R.id.container, new PlaceholderFragment(eventListResults, mapMarkers)).commit();
+                        }
+//                        getAllEventsListView = (ExpandableListView)findViewById(R.id.expListView);
+//
+//                        getAllEventsListView.setOnGroupExpandListener(new ExpandableListView.OnGroupExpandListener() {
+//                            @Override
+//                            public void onGroupExpand(int groupPosition) {
+//                                if (lastExpandedPosition != -1 && groupPosition != lastExpandedPosition) {
+//                                    getAllEventsListView.collapseGroup(lastExpandedPosition);
+//                                    mapMarkers.get(lastExpandedPosition).setIcon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_ORANGE));
+//                                }
+//                                lastExpandedPosition = groupPosition;
+//                                mapMarkers.get(groupPosition).setIcon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_RED));
+//                                gotoLocation(mapMarkers.get(groupPosition).getPosition().latitude, mapMarkers.get(groupPosition).getPosition().longitude, 15);
+//                            }
+//                        });
                     } catch (JSONException e) {
                         e.printStackTrace();
-                }
+                    }
 			}
 			else {
 				Toast.makeText(this, "Map not available", Toast.LENGTH_SHORT).show();				
@@ -116,7 +137,7 @@ public class Main extends FragmentActivity implements GooglePlayServicesClient.C
 	}
 
 	// Go to the specified location
-	private void gotoLocation(double lat, double lng, float zoom) {
+	public void gotoLocation(double lat, double lng, float zoom) {
         LatLng ll = new LatLng(lat, lng);
         CameraUpdate update = CameraUpdateFactory.newLatLngZoom(ll, zoom);
         mMap.animateCamera(update);
@@ -124,12 +145,24 @@ public class Main extends FragmentActivity implements GooglePlayServicesClient.C
 
 	@Override
 	public boolean onCreateOptionsMenu(Menu menu) {
-
+        Toast.makeText(getApplication(), "SHOW MENU", Toast.LENGTH_SHORT).show();
 		// Inflate the menu; this adds items to the action bar if it is present.
-		getMenuInflater().inflate(R.menu.main, menu);
+        getMenuInflater().inflate(R.menu.main, menu);
+//        menu.findItem(R.id.action_settings).setOnActionExpandListener(new MenuItem.OnActionExpandListener() {
+//            @Override
+//            public boolean onMenuItemActionExpand(MenuItem item) {
+//                toggleSettings(item.getActionView());
+//                return false;
+//            }
+//
+//            @Override
+//            public boolean onMenuItemActionCollapse(MenuItem item) {
+//                return false;
+//            }
+//        });
 		return true;
 	}
-	
+
 	@Override
 	public boolean onOptionsItemSelected(MenuItem item) {
 		
@@ -149,6 +182,14 @@ public class Main extends FragmentActivity implements GooglePlayServicesClient.C
 		case R.id.mapTypeHybrid:
 			mMap.setMapType(GoogleMap.MAP_TYPE_HYBRID);		
 			break;
+
+        case R.id.action_create_event:
+            gotoCreateEvent(item.getActionView());
+            break;
+
+        case R.id.action_settings:
+            toggleSettings(item.getActionView());
+            break;
 
 		default:
 			break;
@@ -236,7 +277,6 @@ public class Main extends FragmentActivity implements GooglePlayServicesClient.C
 	}
 	
 
-	@SuppressWarnings("unused")
 	private void gotoLocation(double lat, double lng) {
 		LatLng ll = new LatLng(lat, lng);
 		CameraUpdate update = CameraUpdateFactory.newLatLng(ll);
@@ -307,6 +347,7 @@ public class Main extends FragmentActivity implements GooglePlayServicesClient.C
 		
 		LocationRequest request = LocationRequest.create();
 		request.setPriority(LocationRequest.PRIORITY_HIGH_ACCURACY);
+        // Google recommends 60 seconds, we have used 5 seconds for testing purposes
 		request.setInterval(5000);
 		request.setFastestInterval(1000);
 		mLocationClient.requestLocationUpdates(request, this);
@@ -363,18 +404,126 @@ public class Main extends FragmentActivity implements GooglePlayServicesClient.C
         }
 	}
 	
-	public void setListAdapter() {
+//	public void setListAdapter() {
+//
+//		adapter = new GetAllEventListViewAdapter(eventListResults, this);
+//		getAllEventsListView.setAdapter(adapter);
+//
+//        DisplayMetrics displaymetrics = new DisplayMetrics();
+//        getWindowManager().getDefaultDisplay().getMetrics(displaymetrics);
+//        int screenWidth = displaymetrics.widthPixels;
+//
+//        getAllEventsListView.setIndicatorBoundsRelative(screenWidth-200, screenWidth);
+//
+//	}
 
-		adapter = new GetAllEventListViewAdapter(eventListResults, this);
-		getAllEventsListView.setAdapter(adapter);
-	}
+    public void toggleSettings(View view) {
+        if (viewSettingsIsVisible) {
+            mViewSettings.setVisibility(View.GONE);
+        } else {
+            mViewSettings.setVisibility(View.VISIBLE);
+        }
 
-	public static void showDetails(View view) {
-		Toast.makeText(view.getContext(), view.getTag().toString(), Toast.LENGTH_SHORT).show();
-	}
-
-    public void gotoSettings(View view) {
-        Toast.makeText(this, "Click", Toast.LENGTH_SHORT).show();
+        viewSettingsIsVisible = !viewSettingsIsVisible;
     }
 
+    public void gotoCreateEvent(View view) {
+        Intent createEvent = new Intent("com.example.events.CREATE");
+        startActivity(createEvent);
+        startActivityForResult(createEvent, 1);
+
+    }
+
+    public void hideSettings(View view) {
+
+    }
+
+
+    public class PlaceholderFragment extends Fragment implements SwipeRefreshLayout.OnRefreshListener {
+
+        private SwipeRefreshLayout swipeRefreshLayout;
+        public ExpandableListView getAllEventsListView;
+        public GetAllEventListViewAdapter adapter;
+        private JSONArray eventListResults;
+        private int lastExpandedPosition = -1;
+
+        private List<Marker> mapMarkers;
+
+
+        public PlaceholderFragment(JSONArray eventListResults, List<Marker> markers) {
+            this.eventListResults = eventListResults;
+            this.mapMarkers = markers;
+
+
+        }
+
+        @Override
+        public View onCreateView(LayoutInflater inflater, ViewGroup container,
+                                 Bundle savedInstanceState) {
+            swipeRefreshLayout = new SwipeRefreshLayout(getActivity());
+            return swipeRefreshLayout;
+        }
+
+        @Override
+        public void onActivityCreated(Bundle savedInstanceState) {
+            super.onActivityCreated(savedInstanceState);
+
+            getAllEventsListView = new ExpandableListView(getActivity());
+            getAllEventsListView.setId(R.id.expListView);
+            setListAdapter();
+            swipeRefreshLayout.addView(getAllEventsListView);
+            swipeRefreshLayout.setColorScheme(android.R.color.holo_orange_dark,
+                    android.R.color.holo_green_light,
+                    android.R.color.holo_blue_dark,
+                    android.R.color.holo_green_light);
+            swipeRefreshLayout.setOnRefreshListener(this);
+
+
+            getAllEventsListView.setOnGroupExpandListener(new ExpandableListView.OnGroupExpandListener() {
+                @Override
+                public void onGroupExpand(int groupPosition) {
+                    if (lastExpandedPosition != -1 && groupPosition != lastExpandedPosition) {
+                        getAllEventsListView.collapseGroup(lastExpandedPosition);
+                        mapMarkers.get(lastExpandedPosition).setIcon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_ORANGE));
+                    }
+                    lastExpandedPosition = groupPosition;
+                    mapMarkers.get(groupPosition).setIcon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_RED));
+                    gotoLocation(mapMarkers.get(groupPosition).getPosition().latitude, mapMarkers.get(groupPosition).getPosition().longitude, 15);
+                }
+            });
+        }
+
+        public void setListAdapter() {
+
+            adapter = new GetAllEventListViewAdapter(eventListResults, getActivity());
+            getAllEventsListView.setAdapter(adapter);
+
+            DisplayMetrics displaymetrics = new DisplayMetrics();
+            getActivity().getWindowManager().getDefaultDisplay().getMetrics(displaymetrics);
+            int screenWidth = displaymetrics.widthPixels;
+
+            getAllEventsListView.setIndicatorBoundsRelative(screenWidth-200, screenWidth);
+
+        }
+
+        @Override
+        public void onRefresh() {
+            new Thread() {
+                public void run() {
+                    SystemClock.sleep(4000);
+
+                    getActivity().runOnUiThread(new Runnable() {
+
+                        @Override
+                        public void run() {
+                            Toast.makeText(getActivity(), "Refresh", Toast.LENGTH_SHORT).show();
+                            swipeRefreshLayout.setRefreshing(false);
+                        }
+                    });
+
+                };
+            }.start();
+        }
+
+    }
 }
