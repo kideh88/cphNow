@@ -57,10 +57,11 @@ public class Main extends FragmentActivity implements GooglePlayServicesClient.C
     private static final double VIBEVEJ_LAT = 55.697437, VIBEVEJ_LNG = 12.526206;
     private static final float DEFAULTZOOM = 5;
     private static final int GPS_ERRORDIALOG_REQUEST = 9001;
-//    private int lastExpandedPosition = -1;
+    private int lastExpandedPosition = -1;
 
     public ExpandableListView getAllEventsListView;
-//    public GetAllEventListViewAdapter adapter;
+    public GetAllEventListViewAdapter adapter;
+
 	public static String appToken;
     public static String username;
     public static final String PREFS_NAME = "CPHnowSettings";
@@ -441,6 +442,7 @@ public class Main extends FragmentActivity implements GooglePlayServicesClient.C
             // Make sure the request was successful
             if (resultCode == RESULT_OK) {
                 Toast.makeText(this, "Event activity closed", Toast.LENGTH_SHORT).show();
+                updateAllEvents();
                 // The user picked a contact.
                 // The Intent's data Uri identifies which contact was selected.
 
@@ -452,13 +454,29 @@ public class Main extends FragmentActivity implements GooglePlayServicesClient.C
         }
     }
 
+    public void updateAllEvents() {
+        eventListResults = null;
+        eventListResults = getEventList();
+        adapter = new GetAllEventListViewAdapter(eventListResults, this);
+        getAllEventsListView.setAdapter(adapter);
+        mapMarkers.clear();
+        mMap.clear();
+        lastExpandedPosition = -1;
+
+        try {
+            for (int key = 0; key < eventListResults.length(); key+=1) {
+                JSONObject eventData = eventListResults.getJSONObject(key);
+                mapMarkers.add(setMarker(eventData.getString("strEventName"),"", eventData.getDouble("dblLatitude"), eventData.getDouble("dblLongitude")));
+            }
+        } catch (JSONException e) {
+            e.printStackTrace();
+
+        }
+    }
 
     public class PlaceholderFragment extends Fragment implements SwipeRefreshLayout.OnRefreshListener {
 
         private SwipeRefreshLayout swipeRefreshLayout;
-        public ExpandableListView getAllEventsListView;
-        public GetAllEventListViewAdapter adapter;
-        private int lastExpandedPosition = -1;
 
         public PlaceholderFragment() { }
 
@@ -527,23 +545,7 @@ public class Main extends FragmentActivity implements GooglePlayServicesClient.C
 
                         @Override
                         public void run() {
-                            eventListResults = null;
-                            eventListResults = getEventList();
-                            adapter = new GetAllEventListViewAdapter(eventListResults, getActivity());
-                            getAllEventsListView.setAdapter(adapter);
-                            mapMarkers.clear();
-                            mMap.clear();
-                            lastExpandedPosition = -1;
-
-                            try {
-                                for (int key = 0; key < eventListResults.length(); key+=1) {
-                                    JSONObject eventData = eventListResults.getJSONObject(key);
-                                    mapMarkers.add(setMarker(eventData.getString("strEventName"),"", eventData.getDouble("dblLatitude"), eventData.getDouble("dblLongitude")));
-                                }
-                            } catch (JSONException e) {
-                                e.printStackTrace();
-
-                            }
+                            updateAllEvents();
                             swipeRefreshLayout.setRefreshing(false);
                         }
                     });
@@ -551,6 +553,8 @@ public class Main extends FragmentActivity implements GooglePlayServicesClient.C
                 };
             }.start();
         }
+
+
 
     }
 }

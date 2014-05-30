@@ -239,7 +239,8 @@ public class Create extends Activity implements GooglePlayServicesClient.Connect
 
             if(blnEventCreated) {
                 Toast.makeText(this, "Event has been created!", Toast.LENGTH_SHORT).show();
-                finishActivity(1);
+                setResult(RESULT_OK);
+                finish();
             }
             else {
                 Toast.makeText(this, "Failed to create Event", Toast.LENGTH_SHORT).show();
