@@ -53,7 +53,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 
 public class Main extends FragmentActivity implements GooglePlayServicesClient.ConnectionCallbacks, GooglePlayServicesClient.OnConnectionFailedListener, LocationListener {
 
-	private JSONArray eventListResults;
+	public JSONArray eventListResults;
     private static final double VIBEVEJ_LAT = 55.697437, VIBEVEJ_LNG = 12.526206;
     private static final float DEFAULTZOOM = 5;
     private static final int GPS_ERRORDIALOG_REQUEST = 9001;
@@ -67,7 +67,7 @@ public class Main extends FragmentActivity implements GooglePlayServicesClient.C
 	GoogleMap mMap;
 
     LocationClient mLocationClient;
-    private List<Marker> mapMarkers = new ArrayList<Marker>();
+    public List<Marker> mapMarkers = new ArrayList<Marker>();
 
     private boolean viewSettingsIsVisible = false;
 
@@ -104,7 +104,7 @@ public class Main extends FragmentActivity implements GooglePlayServicesClient.C
                         }
                         if (savedInstanceState == null) {
                             getFragmentManager().beginTransaction()
-                                    .add(R.id.container, new PlaceholderFragment(eventListResults, mapMarkers)).commit();
+                                    .add(R.id.container, new PlaceholderFragment()).commit();
                         }
 //                        getAllEventsListView = (ExpandableListView)findViewById(R.id.expListView);
 //
@@ -429,13 +429,27 @@ public class Main extends FragmentActivity implements GooglePlayServicesClient.C
 
     public void gotoCreateEvent(View view) {
         Intent createEvent = new Intent("com.example.events.CREATE");
-        startActivity(createEvent);
         startActivityForResult(createEvent, 1);
 
     }
 
-    public void hideSettings(View view) {
 
+    @Override
+    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
+        // Check which request we're responding to
+        if (requestCode == 1) {
+            // Make sure the request was successful
+            if (resultCode == RESULT_OK) {
+                Toast.makeText(this, "Event activity closed", Toast.LENGTH_SHORT).show();
+                // The user picked a contact.
+                // The Intent's data Uri identifies which contact was selected.
+
+                // Do something with the contact here (bigger example below)
+            }
+            else {
+                Toast.makeText(this, "Event activity crashed?", Toast.LENGTH_SHORT).show();
+            }
+        }
     }
 
 
@@ -444,18 +458,9 @@ public class Main extends FragmentActivity implements GooglePlayServicesClient.C
         private SwipeRefreshLayout swipeRefreshLayout;
         public ExpandableListView getAllEventsListView;
         public GetAllEventListViewAdapter adapter;
-        private JSONArray eventListResults;
         private int lastExpandedPosition = -1;
 
-        private List<Marker> mapMarkers;
-
-
-        public PlaceholderFragment(JSONArray eventListResults, List<Marker> markers) {
-            this.eventListResults = eventListResults;
-            this.mapMarkers = markers;
-
-
-        }
+        public PlaceholderFragment() { }
 
         @Override
         public View onCreateView(LayoutInflater inflater, ViewGroup container,
@@ -478,7 +483,10 @@ public class Main extends FragmentActivity implements GooglePlayServicesClient.C
                     android.R.color.holo_green_light);
             swipeRefreshLayout.setOnRefreshListener(this);
 
+            setEventClickListeners();
+        }
 
+        public void setEventClickListeners() {
             getAllEventsListView.setOnGroupExpandListener(new ExpandableListView.OnGroupExpandListener() {
                 @Override
                 public void onGroupExpand(int groupPosition) {
@@ -506,17 +514,36 @@ public class Main extends FragmentActivity implements GooglePlayServicesClient.C
 
         }
 
+
+
         @Override
         public void onRefresh() {
+
             new Thread() {
                 public void run() {
-                    SystemClock.sleep(4000);
+                    SystemClock.sleep(2000);
 
                     getActivity().runOnUiThread(new Runnable() {
 
                         @Override
                         public void run() {
-                            Toast.makeText(getActivity(), "Refresh", Toast.LENGTH_SHORT).show();
+                            eventListResults = null;
+                            eventListResults = getEventList();
+                            adapter = new GetAllEventListViewAdapter(eventListResults, getActivity());
+                            getAllEventsListView.setAdapter(adapter);
+                            mapMarkers.clear();
+                            mMap.clear();
+                            lastExpandedPosition = -1;
+
+                            try {
+                                for (int key = 0; key < eventListResults.length(); key+=1) {
+                                    JSONObject eventData = eventListResults.getJSONObject(key);
+                                    mapMarkers.add(setMarker(eventData.getString("strEventName"),"", eventData.getDouble("dblLatitude"), eventData.getDouble("dblLongitude")));
+                                }
+                            } catch (JSONException e) {
+                                e.printStackTrace();
+
+                            }
                             swipeRefreshLayout.setRefreshing(false);
                         }
                     });

@@ -283,4 +283,5 @@ public class Create extends Activity implements GooglePlayServicesClient.Connect
     public void onLocationChanged(Location location) {
         // Valid phone location updates automatically
     }
+
 }
